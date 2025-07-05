@@ -1,0 +1,257 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "data-football-anaylsis"
+		},
+		"ls_football_analysis_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ls_football_analysis'"
+		},
+		"ls_football_analysis_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://gptldataanalysis.dfs.core.windows.net/"
+		},
+		"trigger_properties_pl_copy_raw_to_bronze_parameters_input_file_name": {
+			"type": "string",
+			"defaultValue": "players - players.csv"
+		},
+		"trigger_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/5f0f89e8-3f3b-4a87-869c-92f2c838f701/resourceGroups/football_data_analysis/providers/Microsoft.Storage/storageAccounts/gptldataanalysis"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_football_analysis')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('ls_football_analysis_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('ls_football_analysis_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_copy_data')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_football_analysis",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"ds_name": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().ds_name",
+							"type": "Expression"
+						},
+						"fileSystem": "football-anaylsis-raw-layer"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_football_analysis')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_copy_sink_data')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ls_football_analysis",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"ds_name": {
+						"type": "String"
+					},
+					"directory_ds_name": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().ds_name",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().directory_ds_name",
+							"type": "Expression"
+						},
+						"fileSystem": "brozne-layer"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_football_analysis')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_copy_raw_to_bronze')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "act_copy_data",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "BinarySource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true
+								},
+								"formatSettings": {
+									"type": "BinaryReadSettings"
+								}
+							},
+							"sink": {
+								"type": "BinarySink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_copy_data",
+								"type": "DatasetReference",
+								"parameters": {
+									"ds_name": {
+										"value": "@pipeline().parameters.input_file_name",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_copy_sink_data",
+								"type": "DatasetReference",
+								"parameters": {
+									"ds_name": {
+										"value": "@pipeline().parameters.input_file_name",
+										"type": "Expression"
+									},
+									"directory_ds_name": {
+										"value": "@concat(formatDateTime(utcNow(),'yyyy-mm-dd'),'/',split(pipeline().parameters.input_file_name,',')[0])",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					},
+					{
+						"name": "act_set_variable",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "date",
+							"value": {
+								"value": "@formatDateTime(utcNow(),'yyyy-mm-dd')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"input_file_name": {
+						"type": "String"
+					}
+				},
+				"variables": {
+					"date": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "ingest_pipline"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_copy_data')]",
+				"[concat(variables('factoryId'), '/datasets/ds_copy_sink_data')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/trigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Stopped",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "pl_copy_raw_to_bronze",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"input_file_name": "[parameters('trigger_properties_pl_copy_raw_to_bronze_parameters_input_file_name')]"
+						}
+					}
+				],
+				"type": "BlobEventsTrigger",
+				"typeProperties": {
+					"blobPathBeginsWith": "/brozne-layer/blobs/",
+					"ignoreEmptyBlobs": true,
+					"scope": "[parameters('trigger_properties_typeProperties_scope')]",
+					"events": [
+						"Microsoft.Storage.BlobCreated"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/pl_copy_raw_to_bronze')]"
+			]
+		}
+	]
+}

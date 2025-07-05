@@ -1,0 +1,70 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "data-football-anaylsis"
+		},
+		"ls_football_analysis_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ls_football_analysis'"
+		},
+		"ls_football_analysis_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://gptldataanalysis.dfs.core.windows.net/"
+		},
+		"trigger_properties_pl_copy_raw_to_bronze_parameters_input_file_name": {
+			"type": "string",
+			"defaultValue": "players - players.csv"
+		},
+		"trigger_properties_typeProperties_scope": {
+			"type": "string",
+			"defaultValue": "/subscriptions/5f0f89e8-3f3b-4a87-869c-92f2c838f701/resourceGroups/football_data_analysis/providers/Microsoft.Storage/storageAccounts/gptldataanalysis"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "data-football-anaylsis_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"ls_football_analysis_accountKey": {
+						"value": "[parameters('ls_football_analysis_accountKey')]"
+					},
+					"ls_football_analysis_properties_typeProperties_url": {
+						"value": "[parameters('ls_football_analysis_properties_typeProperties_url')]"
+					},
+					"trigger_properties_pl_copy_raw_to_bronze_parameters_input_file_name": {
+						"value": "[parameters('trigger_properties_pl_copy_raw_to_bronze_parameters_input_file_name')]"
+					},
+					"trigger_properties_typeProperties_scope": {
+						"value": "[parameters('trigger_properties_typeProperties_scope')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}
