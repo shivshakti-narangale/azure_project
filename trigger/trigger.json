@@ -10,7 +10,7 @@
 					"type": "PipelineReference"
 				},
 				"parameters": {
-					"input_file_name": "players - players.csv"
+					"input_file_name": "games.csv\n"
 				}
 			}
 		],
