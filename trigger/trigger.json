@@ -16,6 +16,7 @@
 		],
 		"type": "BlobEventsTrigger",
 		"typeProperties": {
+			"blobPathBeginsWith": "/brozne-layer/blobs/",
 			"ignoreEmptyBlobs": true,
 			"scope": "/subscriptions/5f0f89e8-3f3b-4a87-869c-92f2c838f701/resourceGroups/football_data_analysis/providers/Microsoft.Storage/storageAccounts/gptldataanalysis",
 			"events": [
