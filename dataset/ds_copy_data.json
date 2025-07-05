@@ -1,0 +1,26 @@
+{
+	"name": "ds_copy_data",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_football_analysis",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"ds_name": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().ds_name",
+					"type": "Expression"
+				},
+				"fileSystem": "football-anaylsis-raw-layer"
+			}
+		}
+	}
+}

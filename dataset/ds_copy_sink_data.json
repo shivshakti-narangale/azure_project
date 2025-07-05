@@ -1,0 +1,33 @@
+{
+	"name": "ds_copy_sink_data",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_football_analysis",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"ds_name": {
+				"type": "String"
+			},
+			"directory_ds_name": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().ds_name",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().directory_ds_name",
+					"type": "Expression"
+				},
+				"fileSystem": "brozne-layer"
+			}
+		}
+	}
+}

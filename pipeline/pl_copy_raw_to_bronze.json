@@ -1,0 +1,98 @@
+{
+	"name": "pl_copy_raw_to_bronze",
+	"properties": {
+		"activities": [
+			{
+				"name": "act_copy_data",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "BinarySource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true
+						},
+						"formatSettings": {
+							"type": "BinaryReadSettings"
+						}
+					},
+					"sink": {
+						"type": "BinarySink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_copy_data",
+						"type": "DatasetReference",
+						"parameters": {
+							"ds_name": {
+								"value": "@pipeline().parameters.input_file_name",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_copy_sink_data",
+						"type": "DatasetReference",
+						"parameters": {
+							"ds_name": {
+								"value": "@pipeline().parameters.input_file_name",
+								"type": "Expression"
+							},
+							"directory_ds_name": {
+								"value": "@concat(formatDateTime(utcNow(),'yyyy-mm-dd'),'/',split(pipeline().parameters.input_file_name,',')[0])",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			},
+			{
+				"name": "act_set_variable",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "date",
+					"value": {
+						"value": "@formatDateTime(utcNow(),'yyyy-mm-dd')",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"parameters": {
+			"input_file_name": {
+				"type": "String"
+			}
+		},
+		"variables": {
+			"date": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "ingest_pipline"
+		},
+		"annotations": []
+	}
+}
