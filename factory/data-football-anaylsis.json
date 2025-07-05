@@ -1,0 +1,9 @@
+{
+	"name": "data-football-anaylsis",
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "d3c45b55-377a-4642-87fa-09c610641c9b",
+		"tenantId": "710f160f-bf51-4261-9b66-e35748f577cc"
+	}
+}
