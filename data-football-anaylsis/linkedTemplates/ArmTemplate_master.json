@@ -17,7 +17,7 @@
 		},
 		"trigger_properties_pl_copy_raw_to_bronze_parameters_input_file_name": {
 			"type": "string",
-			"defaultValue": "players - players.csv"
+			"defaultValue": "games.csv\n"
 		},
 		"trigger_properties_typeProperties_scope": {
 			"type": "string",

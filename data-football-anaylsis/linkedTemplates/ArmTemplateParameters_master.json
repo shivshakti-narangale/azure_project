@@ -12,7 +12,7 @@
 			"value": "https://gptldataanalysis.dfs.core.windows.net/"
 		},
 		"trigger_properties_pl_copy_raw_to_bronze_parameters_input_file_name": {
-			"value": "players - players.csv"
+			"value": "games.csv\n"
 		},
 		"trigger_properties_typeProperties_scope": {
 			"value": "/subscriptions/5f0f89e8-3f3b-4a87-869c-92f2c838f701/resourceGroups/football_data_analysis/providers/Microsoft.Storage/storageAccounts/gptldataanalysis"
